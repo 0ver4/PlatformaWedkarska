@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GdzieRyba - Platforma Wędkarska</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script>
+</head>
+
+<body>
+    <!-- Panel Symulatora Ról dla Nauczyciela / Użytkownika -->
+    <div id="simulator-bar">
+        <div class="simulator-container">
+            <span class="simulator-title">Aktywna rola symulacji:</span>
+            <div class="simulator-roles">
+                <button class="role-btn active" data-role="gosc" id="btn-role-gosc">Gość</button>
+                <button class="role-btn" data-role="wedkarz" id="btn-role-wedkarz">Wędkarz</button>
+                <button class="role-btn" data-role="zarzadca" id="btn-role-zarzadca">Zarządca</button>
+                <button class="role-btn" data-role="admin" id="btn-role-admin">Administrator</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Główny Kontener Aplikacji -->
+    <div id="app-container">
+        <!-- Nagłówek i Nawigacja -->
+        <header id="main-header">
+            <div class="logo-container" id="btn-logo">
+                <!-- Wektorowa ikona ryby SVG zamiast emoji -->
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 15.5c-2.485 0-4.5-2.015-4.5-4.5s2.015-4.5 4.5-4.5 4.5 2.015 4.5 4.5-2.015 4.5-4.5 4.5zm-5-4.5c0-2.761 2.239-5 5-5s5 2.239 5 5-2.239 5-5 5-5-2.239-5-5zm8 0c0-1.657-1.343-3-3-3s-3 1.343-3 3 1.343 3 3 3 3-1.343 3-3z" />
+                    <path d="M2 12h20M12 2v20" />
+                </svg>
+                <span class="logo-text">GdzieRyba</span>
+            </div>
+
+            <nav id="main-nav">
+                <!-- Dynamicznie sterowane zakładki dla poszczególnych ról -->
+                <div class="nav-group gosc-nav active-nav-group">
+                    <button class="nav-link active" data-view="home-view" id="nav-gosc-home">Strona Główna</button>
+                    <button class="nav-link" data-view="map-view" id="nav-gosc-map">Mapa Łowisk</button>
+                    <button class="nav-link" data-view="records-view" id="nav-gosc-records">Tablica Rekordów</button>
+                    <button class="nav-link auth-btn" data-view="login-view" id="nav-gosc-login">Zaloguj się</button>
+                </div>
+
+                <div class="nav-group wedkarz-nav">
+                    <button class="nav-link active" data-view="home-view" id="nav-wedk-home">Strona Główna</button>
+                    <button class="nav-link" data-view="map-view" id="nav-wedk-map">Mapa Łowisk</button>
+                    <button class="nav-link" data-view="wedkarz-reservations-view" id="nav-wedk-res">Moje
+                        Rezerwacje</button>
+                    <button class="nav-link" data-view="records-view" id="nav-wedk-records">Tablica Rekordów</button>
+                    <button class="nav-link" data-view="report-catch-view" id="nav-wedk-report">Zgłoś Połów</button>
+                    <button class="nav-link" data-view="profile-view" id="nav-wedk-profile">Mój Profil</button>
+                    <button class="nav-link logout-btn" id="nav-wedk-logout">Wyloguj</button>
+                </div>
+
+                <div class="nav-group zarzadca-nav">
+                    <button class="nav-link active" data-view="zarzadca-fisheries-view" id="nav-zarz-fish">Moje
+                        Łowiska</button>
+                    <button class="nav-link" data-view="zarzadca-reservations-view"
+                        id="nav-zarz-res">Rezerwacje</button>
+                    <button class="nav-link" data-view="zarzadca-calendar-view" id="nav-zarz-cal">Terminarz</button>
+                    <button class="nav-link" data-view="profile-view" id="nav-zarz-profile">Dane Firmy</button>
+                    <button class="nav-link logout-btn" id="nav-zarz-logout">Wyloguj</button>
+                </div>
+
+                <div class="nav-group admin-nav">
+                    <button class="nav-link active" data-view="admin-records-view" id="nav-admin-rec">Moderacja
+                        Rekordów</button>
+                    <button class="nav-link" data-view="admin-fisheries-view" id="nav-admin-fish">Weryfikacja
+                        Łowisk</button>
+                    <button class="nav-link" data-view="admin-users-view" id="nav-admin-users">Użytkownicy</button>
+                    <button class="nav-link logout-btn" id="nav-admin-logout">Wyloguj</button>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Dynamiczna Treść (Widoki) -->
+        <main id="main-content">
+
+            <!-- WIDOK: Strona Główna (Gość / Wędkarz) -->
+            <section id="home-view" class="app-view active">
+                <div class="hero-section card">
+                    <h1 class="hero-title">Platforma Wędkarska GdzieRyba</h1>
+                    <p class="hero-subtitle">Zintegrowany system rezerwacji stanowisk wędkarskich oraz ewidencji i
+                        weryfikacji okazów rybackich</p>
+                    <div class="hero-buttons">
+                        <button class="btn btn-primary" onclick="switchView('map-view')">Przeglądaj Mapę Łowisk</button>
+                        <button class="btn btn-secondary" onclick="switchView('records-view')">Zobacz Tablicę
+                            Rekordów</button>
+                    </div>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-card card" onclick="switchView('map-view')">
+                        <div class="feature-icon-wrapper">
+                            <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
+                                <line x1="9" y1="3" x2="9" y2="18"></line>
+                                <line x1="15" y1="6" x2="15" y2="21"></line>
+                            </svg>
+                        </div>
+                        <h3>Interaktywna Mapa Łowisk</h3>
+                        <p>Wizualna lokalizacja akwenów z podziałem na Komercyjne, PZW oraz Dzikie Wody. Wybierz dogodne
+                            stanowisko bezpośrednio na planie łowiska.</p>
+                    </div>
+
+                    <div class="feature-card card" onclick="switchView('records-view')">
+                        <div class="feature-icon-wrapper">
+                            <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                                <path d="M4 22h16"></path>
+                                <path d="M10 14.66V17c0 .55-.45 1-1 1H4v2h16v-2h-5c-.55 0-1-.45-1-1v-2.34"></path>
+                                <path d="M12 2a6 6 0 0 1 6 6v5a6 6 0 0 1-6 6 6 6 0 0 1-6-6V8a6 6 0 0 1 6-6z"></path>
+                            </svg>
+                        </div>
+                        <h3>Tablica Rekordów</h3>
+                        <p>Oficjalne zestawienie największych złowionych sztuk zatwierdzone przez administratorów
+                            systemu. Porównuj wagi, długości i techniki.</p>
+                    </div>
+
+                    <div class="feature-card card"
+                        onclick="document.getElementById('btn-role-wedkarz').click(); switchView('report-catch-view');">
+                        <div class="feature-icon-wrapper">
+                            <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                        </div>
+                        <h3>Moduł Rezerwacji</h3>
+                        <p>Zarządzaj terminami i planuj wyjazdy z wyprzedzeniem. Automatyczny system powiadomień oraz
+                            blokowania niedostępnych terminów.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WIDOK: Mapa Łowisk (Gość / Wędkarz) -->
+            <section id="map-view" class="app-view">
+                <div class="view-header">
+                    <h1>Interaktywna Mapa Łowisk</h1>
+                    <p class="subtitle">Znajdź i zarezerwuj idealne miejsce na kolejną wyprawę wędkarską</p>
+                </div>
+
+                <div class="map-layout">
+                    <!-- Lewy panel: Filtry i lista łowisk -->
+                    <div class="map-sidebar">
+                        <div class="filter-card card">
+                            <h2 class="card-title">Filtruj Łowiska</h2>
+                            <div class="form-group">
+                                <label for="filter-search">Nazwa łowiska</label>
+                                <input type="text" id="filter-search" placeholder="Szukaj po nazwie...">
+                            </div>
+                            <div class="form-group">
+                                <label for="filter-type">Typ łowiska</label>
+                                <select id="filter-type">
+                                    <option value="">Wszystkie typy</option>
+                                    <option value="KOMERCYJNE">Komercyjne</option>
+                                    <option value="PZW">PZW (Związkowe)</option>
+                                    <option value="DZIKIE WODY">Dzikie Wody</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="filter-location">Województwo / Lokalizacja</label>
+                                <input type="text" id="filter-location" placeholder="np. Podlaskie">
+                            </div>
+                        </div>
+
+                        <div class="fisheries-list-container">
+                            <h3 class="section-title">Znalezione obiekty (<span id="fisheries-count">0</span>)</h3>
+                            <div id="fisheries-list" class="list-scroll">
+                                <!-- Dynamicznie generowana lista łowisk -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Prawy panel: Interaktywna mapa (Stylizowany Mockup) -->
+                    <div class="map-container card">
+                        <div class="mock-map" id="interactive-map">
+                            <!-- Siatka współrzędnych i grafika tła mapy -->
+                            <div class="map-background">
+                                <svg width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                                            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255, 255, 255, 0.05)"
+                                                stroke-width="1" />
+                                        </pattern>
+                                        <radialGradient id="water-grad" cx="50%" cy="50%" r="50%">
+                                            <stop offset="0%" stop-color="#1e3a8a" stop-opacity="0.3" />
+                                            <stop offset="100%" stop-color="#0f172a" stop-opacity="0.9" />
+                                        </radialGradient>
+                                    </defs>
+                                    <rect width="100%" height="100%" fill="url(#water-grad)" />
+                                    <rect width="100%" height="100%" fill="url(#grid)" />
+                                    <!-- Linie topograficzne / kontury zbiorników wodnych -->
+                                    <path d="M100 150 Q180 80 300 120 T500 200 T700 150 T900 300"
+                                        stroke="rgba(16, 185, 129, 0.1)" stroke-width="2" fill="none" />
+                                    <path d="M50 350 Q200 450 400 380 T750 420 T950 350"
+                                        stroke="rgba(16, 185, 129, 0.1)" stroke-width="2" fill="none" />
+                                    <!-- Jeziora na mapie -->
+                                    <path d="M150 220 C180 180, 320 200, 300 280 C280 340, 180 320, 150 220 Z"
+                                        fill="rgba(16, 185, 129, 0.05)" stroke="rgba(16, 185, 129, 0.2)"
+                                        stroke-width="2" />
+                                    <path d="M600 180 C650 120, 780 150, 750 240 C720 300, 580 260, 600 180 Z"
+                                        fill="rgba(16, 185, 129, 0.05)" stroke="rgba(16, 185, 129, 0.2)"
+                                        stroke-width="2" />
+                                    <path d="M450 420 C500 380, 580 390, 560 450 C540 500, 430 480, 450 420 Z"
+                                        fill="rgba(16, 185, 129, 0.05)" stroke="rgba(16, 185, 129, 0.2)"
+                                        stroke-width="2" />
+                                </svg>
+                            </div>
+                            <!-- Dynamicznie wstawiane pinezki łowisk -->
+                            <div id="map-pins"></div>
+
+                            <!-- Kompas mapy -->
+                            <div class="map-compass">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.5">
+                                    <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.2)" />
+                                    <polygon points="12,4 15,12 12,10 9,12" fill="#10b981" stroke="#10b981" />
+                                    <polygon points="12,20 15,12 12,10 9,12" fill="rgba(255,255,255,0.3)"
+                                        stroke="rgba(255,255,255,0.3)" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WIDOK: Szczegóły Łowiska i Rezerwacja Stanowiska (Pojawia się po kliknięciu na mapie/liście) -->
+            <section id="fishery-details-view" class="app-view">
+                <div class="view-navigation">
+                    <button class="btn btn-secondary back-btn" id="btn-back-to-map">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12,19 5,12 12,5"></polyline>
+                        </svg>
+                        Powrót do mapy
+                    </button>
+                </div>
+
+                <div class="fishery-header-block">
+                    <div class="title-area">
+                        <span class="badge" id="details-badge-type">KOMERCYJNE</span>
+                        <span class="badge badge-verification" id="details-badge-status">Zweryfikowane</span>
+                        <h1 id="details-name">Łowisko Pod Borem</h1>
+                        <p id="details-location" class="location-text">Województwo Podlaskie, Knyszyn</p>
+                    </div>
+                    <div class="contact-area">
+                        <p><strong>Telefon:</strong> <span id="details-contact">123-456-789</span></p>
+                        <p><strong>Właściciel:</strong> <span id="details-owner">Ryby-Max Sp. z o.o.</span></p>
+                    </div>
+                </div>
+
+                <div class="details-grid">
+                    <!-- Opis i szczegóły -->
+                    <div class="details-main-column">
+                        <div class="card detail-card">
+                            <h2 class="card-title">O łowisku</h2>
+                            <p id="details-description" class="desc-text">Wspaniałe łowisko komercyjne położone w
+                                malowniczej okolicy. Bogaty drzewostan, cisza i mnóstwo ryb.</p>
+
+                            <h3 class="section-title">Gatunki ryb w łowisku</h3>
+                            <div class="fish-tags" id="details-fish-tags">
+                                <!-- Dynamiczne tagi ryb -->
+                            </div>
+                        </div>
+
+                        <!-- Lista stanowisk -->
+                        <div class="card detail-card">
+                            <h2 class="card-title">Dostępne Stanowiska</h2>
+                            <p class="subtitle-small">Wybierz stanowisko z listy poniżej, aby dokonać rezerwacji</p>
+                            <div class="stands-grid" id="details-stands-list">
+                                <!-- Dynamicznie generowane stanowiska -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel Rezerwacji (Prawy panel) -->
+                    <div class="details-side-column">
+                        <div class="card reservation-form-card" id="reservation-widget">
+                            <h2 class="card-title">Zarezerwuj Stanowisko</h2>
+
+                            <div class="guest-overlay" id="reservation-guest-alert">
+                                <p>Musisz być zalogowany jako **Wędkarz**, aby dokonać rezerwacji stanowiska.</p>
+                                <button class="btn btn-primary" id="btn-reserv-login">Zaloguj się</button>
+                            </div>
+
+                            <div class="reservation-form-content" id="reservation-form-container">
+                                <div class="selected-stand-info">
+                                    <p>Wybrane stanowisko: <strong id="res-selected-stand-name">Stanowisko 1</strong>
+                                    </p>
+                                    <p>Cena za dobę: <strong id="res-selected-stand-price">50 PLN</strong></p>
+                                </div>
+                                <form id="booking-form">
+                                    <div class="form-group">
+                                        <label for="booking-date-start">Data rozpoczęcia</label>
+                                        <input type="date" id="booking-date-start" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="booking-date-end">Data zakończenia</label>
+                                        <input type="date" id="booking-date-end" required>
+                                    </div>
+                                    <div class="price-summary">
+                                        <span>Liczba dni:</span> <span id="res-days-count">0</span><br>
+                                        <span>Suma do zapłaty:</span> <strong id="res-total-price">0 PLN</strong>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-block"
+                                        id="btn-submit-booking">Zarezerwuj i Wyślij do Potwierdzenia</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WIDOK: Moje Rezerwacje (Wędkarz) -->
+            <section id="wedkarz-reservations-view" class="app-view">
+                <div class="view-header">
+                    <h1>Moje Rezerwacje</h1>
+                    <p class="subtitle">Zarządzaj swoją historią wyjazdów i oczekującymi rezerwacjami</p>
+                </div>
+
+                <div class="card table-card">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Łowisko</th>
+                                    <th>Stanowisko</th>
+                                    <th>Od dnia</th>
+                                    <th>Do dnia</th>
+                                    <th>Koszt</th>
+                                    <th>Status</th>
+                                    <th>Akcja</th>
+                                </tr>
+                            </thead>
+                            <tbody id="wedkarz-reservations-table">
+                                <!-- Dynamiczne rezerwacje wędkarza -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WIDOK: Tablica Rekordów Połowów (Wszyscy) -->
+            <section id="records-view" class="app-view">
+                <div class="view-header">
+                    <h1>Tablica Rekordów Połowów</h1>
+                    <p class="subtitle">Największe okazy zgłoszone przez polską społeczność wędkarską</p>
+                </div>
+
+                <div class="records-layout">
+                    <!-- Filtry po lewej -->
+                    <div class="records-filters card">
+                        <h2 class="card-title">Filtruj Rekordy</h2>
+                        <div class="form-group">
+                            <label for="record-filter-species">Gatunek ryby</label>
+                            <input type="text" id="record-filter-species" placeholder="np. Karp">
+                        </div>
+                        <div class="form-group">
+                            <label for="record-filter-sort">Sortuj według</label>
+                            <select id="record-filter-sort">
+                                <option value="weight">Waga (najwyższa)</option>
+                                <option value="length">Długość (najwyższa)</option>
+                                <option value="date">Data (najnowsza)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Tabela rekordów po prawej -->
+                    <div class="records-content card">
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Zdjęcie</th>
+                                        <th>Wędkarz</th>
+                                        <th>Ryba / Gatunek</th>
+                                        <th>Waga</th>
+                                        <th>Długość</th>
+                                        <th>Data połowu</th>
+                                        <th>Łowisko</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="records-table-body">
+                                    <!-- Dynamiczne rekordy -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WIDOK: Zgłoś Połów (Wędkarz) -->
+            <section id="report-catch-view" class="app-view">
+                <div class="view-header">
+                    <h1>Zgłoś Nowy Rekord Połowu</h1>
+                    <p class="subtitle">Pochwal się swoim sukcesem na tablicy wyników po weryfikacji przez moderatora
+                    </p>
+                </div>
+
+                <div class="form-container-narrow">
+                    <div class="card report-card">
+                        <form id="report-catch-form">
+                            <div class="form-group">
+                                <label for="catch-name">Nazwa własna zgłoszenia</label>
+                                <input type="text" id="catch-name" placeholder="np. Życiówka z Knyszyna" required>
+                            </div>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="catch-species">Gatunek ryby</label>
+                                    <input type="text" id="catch-species" placeholder="np. Karp" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="catch-date">Data złowienia</label>
+                                    <input type="date" id="catch-date" required>
+                                </div>
+                            </div>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="catch-weight">Waga ryby (kg)</label>
+                                    <input type="number" id="catch-weight" step="0.01" placeholder="np. 14.50" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="catch-length">Długość ryby (cm)</label>
+                                    <input type="number" id="catch-length" step="0.1" placeholder="np. 85.0" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="catch-location">Łowisko</label>
+                                <select id="catch-location" required>
+                                    <!-- Dynamiczna lista łowisk do wyboru -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="catch-photo">Zdjęcie okazu (opcjonalne)</label>
+                                <div class="file-upload-zone" id="photo-upload-zone">
+                                    <input type="file" id="catch-photo" accept="image/*" class="file-input-hidden">
+                                    <div class="upload-content">
+                                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                            <polyline points="17 8 12 3 7 8"></polyline>
+                                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                                        </svg>
+                                        <span class="upload-text" id="upload-status-text">Kliknij tutaj lub przeciągnij
+                                            zdjęcie ryby</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" id="btn-cancel-report">Anuluj</button>
+                                <button type="submit" class="btn btn-primary" id="btn-submit-report">Zgłoś do
+                                    Moderacji</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WIDOK: Dane i Ustawienia Profilu (Wędkarz / Zarządca) -->
+            <section id="profile-view" class="app-view">
+                <div class="view-header">
+                    <h1>Profil Użytkownika</h1>
+                    <p class="subtitle">Zarządzaj swoimi danymi osobowymi oraz parametrami konta</p>
+                </div>
+
+                <div class="form-container-narrow">
+                    <div class="card profile-card">
+                        <form id="profile-form">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="profile-name">Imię</label>
+                                    <input type="text" id="profile-name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="profile-surname">Nazwisko</label>
+                                    <input type="text" id="profile-surname" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="profile-email">Adres E-mail</label>
+                                <input type="email" id="profile-email" required>
+                            </div>
+
+                            <!-- Pola specyficzne dla Wędkarza -->
+                            <div id="profile-wedkarz-fields">
+                                <div class="form-group">
+                                    <label for="profile-card-number">Karta Wędkarska (Numer licencji)</label>
+                                    <input type="text" id="profile-card-number" placeholder="np. PL-PZW-2489-A">
+                                </div>
+                            </div>
+
+                            <!-- Pola specyficzne dla Zarządcy -->
+                            <div id="profile-zarzadca-fields">
+                                <div class="form-group">
+                                    <label for="profile-company-name">Nazwa Firmy / Stowarzyszenia</label>
+                                    <input type="text" id="profile-company-name" placeholder="np. Koło PZW nr 4">
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="profile-nip">NIP przedsiębiorstwa</label>
+                                        <input type="text" id="profile-nip" placeholder="np. 1234567890">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="profile-phone">Telefon kontaktowy</label>
+                                        <input type="text" id="profile-phone" placeholder="np. 987654321">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-block">Zapisz Zmiany (Symulacja)</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WIDOK: Logowanie (Gość) -->
+            <section id="login-view" class="app-view">
+                <div class="form-container-narrow">
+                    <div class="card auth-card">
+                        <div class="auth-tabs">
+                            <button class="auth-tab active" id="tab-login">Logowanie</button>
+                            <button class="auth-tab" id="tab-register">Rejestracja</button>
+                        </div>
+
+                        <!-- Formularz Logowania -->
+                        <form id="login-form" class="auth-form-content">
+                            <div class="form-group">
+                                <label for="login-email">E-mail</label>
+                                <input type="email" id="login-email" placeholder="email@przyklad.pl" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="login-password">Hasło</label>
+                                <input type="password" id="login-password" placeholder="wisz swoje hasło" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Zaloguj się</button>
+                        </form>
+
+                        <!-- Formularz Rejestracji -->
+                        <form id="register-form" class="auth-form-content hidden">
+                            <div class="form-group">
+                                <label>Typ konta</label>
+                                <div class="role-selector-radios">
+                                    <label class="radio-label">
+                                        <input type="radio" name="register-role" value="wedkarz" checked>
+                                        Wędkarz (Klient)
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="register-role" value="zarzadca">
+                                        Zarządca łowiska (Firma)
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="reg-name">Imię</label>
+                                    <input type="text" id="reg-name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="reg-surname">Nazwisko</label>
+                                    <input type="text" id="reg-surname" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="reg-email">E-mail</label>
+                                <input type="email" id="reg-email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="reg-password">Hasło</label>
+                                <input type="password" id="reg-password" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Zarejestruj się</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========================================== -->
+            <!-- WIDOKI ZARZĄDCY ŁOWISKA -->
+            <!-- ========================================== -->
+
+            <!-- WIDOK: Moje Łowiska (Zarządca) -->
+            <section id="zarzadca-fisheries-view" class="app-view">
+                <div class="view-header-action">
+                    <div>
+                        <h1>Moje Łowiska</h1>
+                        <p class="subtitle">Zarządzaj swoimi łowiskami i dodawaj nowe akweny do bazy</p>
+                    </div>
+                    <button class="btn btn-primary" id="btn-open-add-fishery">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Dodaj Nowe Łowisko
+                    </button>
+                </div>
+
+                <!-- Lista łowisk Zarządcy -->
+                <div class="fisheries-grid" id="zarzadca-fisheries-list">
+                    <!-- Dynamiczne łowiska zarządcy -->
+                </div>
+
+                <!-- Formularz Dodawania/Edycji Łowiska (Ukryty domyślnie) -->
+                <div id="add-fishery-modal" class="modal-overlay">
+                    <div class="modal-content card">
+                        <div class="modal-header">
+                            <h2 class="modal-title" id="fishery-modal-title">Dodaj Nowe Łowisko</h2>
+                            <button class="modal-close" id="btn-close-fishery-modal">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <form id="fishery-form">
+                            <div class="form-group">
+                                <label for="fish-name">Nazwa łowiska</label>
+                                <input type="text" id="fish-name" placeholder="np. Jezioro Słoneczne" required>
+                            </div>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="fish-type">Typ łowiska</label>
+                                    <select id="fish-type" required>
+                                        <option value="KOMERCYJNE">Komercyjne</option>
+                                        <option value="PZW">PZW</option>
+                                        <option value="DZIKIE WODY">Dzikie Wody</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="fish-location">Województwo / Miejscowość</label>
+                                    <input type="text" id="fish-location" placeholder="np. Podlaskie, Knyszyn" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="fish-desc">Opis łowiska i regulamin</label>
+                                <textarea id="fish-desc" rows="4" placeholder="Opisz swoje łowisko..."
+                                    required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="fish-species-list">Gatunki ryb (rozdziel przecinkami)</label>
+                                <input type="text" id="fish-species-list" placeholder="np. Karp, Amur, Szczupak, Okoń"
+                                    required>
+                            </div>
+
+                            <h3 class="section-title">Stanowiska wędkarskie</h3>
+                            <div id="modal-stands-container">
+                                <!-- Dynamiczne wiersze stanowisk -->
+                            </div>
+                            <button type="button" class="btn btn-secondary btn-small" id="btn-add-stand-row"
+                                style="margin-bottom: 20px;">
+                                Dodaj stanowisko
+                            </button>
+
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" id="btn-cancel-fishery">Anuluj</button>
+                                <button type="submit" class="btn btn-primary" id="btn-save-fishery">Wyślij do
+                                    Weryfikacji</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WIDOK: Rezerwacje Łowisk (Zarządca) -->
+            <section id="zarzadca-reservations-view" class="app-view">
+                <div class="view-header">
+                    <h1>Zarządzanie Rezerwacjami</h1>
+                    <p class="subtitle">Zatwierdzaj oczekujące rezerwacje oraz anuluj nieaktualne pobyty</p>
+                </div>
+
+                <div class="card table-card">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Wędkarz</th>
+                                    <th>Łowisko</th>
+                                    <th>Stanowisko</th>
+                                    <th>Termin (od-do)</th>
+                                    <th>Suma</th>
+                                    <th>Status</th>
+                                    <th>Akcje</th>
+                                </tr>
+                            </thead>
+                            <tbody id="zarzadca-reservations-table">
+                                <!-- Dynamiczne rezerwacje w panelu zarządcy -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WIDOK: Kalendarz i Blokowanie Terminów (Zarządca) -->
+            <section id="zarzadca-calendar-view" class="app-view">
+                <div class="view-header">
+                    <h1>Terminarz i Blokowanie Stanowisk</h1>
+                    <p class="subtitle">Wybierz łowisko i stanowisko, aby zablokować terminy niedostępne (np. zawody,
+                        serwis)</p>
+                </div>
+
+                <div class="calendar-layout">
+                    <!-- Lewa strona: Panel wyboru i blokowania -->
+                    <div class="calendar-controls card">
+                        <h2 class="card-title">Zablokuj Stanowisko</h2>
+                        <form id="block-dates-form">
+                            <div class="form-group">
+                                <label for="cal-select-fishery">Wybierz łowisko</label>
+                                <select id="cal-select-fishery" required>
+                                    <!-- Dynamiczne łowiska zarządcy -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="cal-select-stand">Stanowisko</label>
+                                <select id="cal-select-stand" required>
+                                    <!-- Dynamiczne stanowiska wybranego łowiska -->
+                                </select>
+                            </div>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="cal-block-start">Data rozpoczęcia</label>
+                                    <input type="date" id="cal-block-start" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="cal-block-end">Data zakończenia</label>
+                                    <input type="date" id="cal-block-end" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Zablokuj Wybrany Termin</button>
+                        </form>
+                    </div>
+
+                    <!-- Prawa strona: Kalendarz / Harmonogram rezerwacji (Wizualna lista obłożeń) -->
+                    <div class="calendar-display card">
+                        <h2 class="card-title">Aktualny Harmonogram Rezerwacji i Blokad</h2>
+                        <div id="calendar-bookings-list" class="timeline-list">
+                            <!-- Dynamiczna lista rezerwacji / blokad z możliwością usuwania blokad -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========================================== -->
+            <!-- WIDOKI ADMINISTRATORA -->
+            <!-- ========================================== -->
+
+            <!-- WIDOK: Moderacja Rekordów (Admin) -->
+            <section id="admin-records-view" class="app-view">
+                <div class="view-header">
+                    <h1>Moderacja Zgłoszonych Rekordów</h1>
+                    <p class="subtitle">Zatwierdzaj zgłoszenia rekordowych ryb po sprawdzeniu poprawności zdjęć i wagi
+                    </p>
+                </div>
+
+                <div class="card table-card">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Wędkarz</th>
+                                    <th>Gatunek</th>
+                                    <th>Waga (kg)</th>
+                                    <th>Długość (cm)</th>
+                                    <th>Data</th>
+                                    <th>Łowisko</th>
+                                    <th>Akcja</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-records-table">
+                                <!-- Zgłoszenia do moderacji -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WIDOK: Weryfikacja Łowisk (Admin) -->
+            <section id="admin-fisheries-view" class="app-view">
+                <div class="view-header">
+                    <h1>Weryfikacja Nowych Łowisk</h1>
+                    <p class="subtitle">Zatwierdzaj łowiska dodane przez Zarządców, aby stały się widoczne na mapie dla
+                        Wędkarzy</p>
+                </div>
+
+                <div class="card table-card">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nazwa</th>
+                                    <th>Typ</th>
+                                    <th>Lokalizacja</th>
+                                    <th>Zarządca</th>
+                                    <th>Status</th>
+                                    <th>Akcja</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-fisheries-table">
+                                <!-- Nowe łowiska do moderacji -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WIDOK: Użytkownicy (Admin) -->
+            <section id="admin-users-view" class="app-view">
+                <div class="view-header">
+                    <h1>Zarządzanie Użytkownikami</h1>
+                    <p class="subtitle">Przegląd kont wędkarzy i zarządców z opcją czasowej blokady dostępu</p>
+                </div>
+
+                <div class="card table-card">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nazwisko i Imię</th>
+                                    <th>E-mail</th>
+                                    <th>Rola</th>
+                                    <th>Status konta</th>
+                                    <th>Akcja</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-users-table">
+                                <!-- Tabela użytkowników -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- System Powiadomień (Toast) -->
+        <div id="toast-container"></div>
+
+        <!-- Stopka -->
+        <footer id="main-footer">
+            <p>&copy; 2026 GdzieRyba - Projekt Inżynierii Oprogramowania. Wszelkie prawa zastrzeżone.</p>
+        </footer>
+    </div>
+</body>
+
+</html>
